@@ -128,6 +128,26 @@
   .light-mode .toggle-knob { right: 18px; background: var(--accent); }
   .light-mode .toggle-switch { background: var(--accent-glow); }
 
+  /* ── Notification Toggle (AI reminders) ── */
+  .notif-toggle {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 13px; color: var(--text2);
+    transition: all 0.15s;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    margin-bottom: 8px;
+  }
+  .notif-toggle:hover { border-color: var(--border2); color: var(--text); }
+  .notif-toggle-icon { width: 16px; height: 16px; flex-shrink: 0; fill: var(--text3); transition: fill 0.2s; }
+  .notif-toggle.on .notif-toggle-icon { fill: var(--accent); }
+  .notif-dot-live { width: 8px; height: 8px; border-radius: 50%; background: var(--text3); margin-right: auto; flex-shrink: 0; transition: background 0.2s, box-shadow 0.2s; }
+  .notif-toggle.on .notif-dot-live { background: var(--green); box-shadow: 0 0 8px rgba(46,204,139,0.6); animation: pulseDot 2s infinite; }
+  @keyframes pulseDot { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+  .notif-status-line { font-size: 10.5px; color: var(--text3); padding: 0 12px 10px; line-height: 1.4; }
+
   /* ── Top Bar ── */
   .topbar { display: flex; align-items: center; gap: 16px; margin-bottom: 28px; }
   .page-title { font-size: 22px; font-weight: 700; color: var(--text); flex: 1; }
@@ -372,6 +392,9 @@
   .notif.info .notif-dot { background: var(--accent); }
 
   /* ── Responsive ── */
+  .mobile-topbar { display: none; }
+  .mobile-bottom-nav { display: none; }
+
   @media (max-width: 900px) {
     .sidebar { width: 220px; padding: 20px 14px; }
     .main { margin-right: 220px; padding: 24px 20px; }
@@ -379,13 +402,68 @@
     .add-fields { grid-template-columns: 1fr 1fr; }
     .add-btn { grid-column: span 2; justify-content: center; }
   }
+
   @media (max-width: 640px) {
+    body { padding-bottom: 64px; }
     .sidebar { display: none; }
-    .main { margin-right: 0; padding: 16px; }
+    .main { margin-right: 0; padding: 14px; padding-top: 70px; }
     .stats-grid { grid-template-columns: repeat(2, 1fr); }
     .add-fields { grid-template-columns: 1fr; }
     .add-btn { width: 100%; justify-content: center; }
     .add-row2 { grid-template-columns: 1fr 1fr; }
+    .topbar .page-title { font-size: 18px; }
+    .filters-bar { gap: 8px; }
+    .search-wrap { width: 100%; margin-right: 0; order: 10; }
+    .search-input { min-width: 0 !important; width: 100%; }
+    .modal { width: 92vw; padding: 20px; }
+
+    /* شريط علوي ثابت يحمل نفس عناصر التحكم الموجودة في اللاب توب (اللوجو، الوضع الليلي، الإشعارات) */
+    .mobile-topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      position: fixed; top: 0; right: 0; left: 0; z-index: 150;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 16px;
+    }
+    .mobile-logo { display: flex; align-items: center; gap: 8px; }
+    .mobile-topbar-actions { display: flex; gap: 8px; }
+    .mobile-icon-btn {
+      position: relative;
+      width: 36px; height: 36px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+    }
+    .mobile-icon-btn svg { width: 17px; height: 17px; fill: var(--text2); }
+    .mobile-notif-dot {
+      position: absolute; top: 5px; left: 5px;
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--text3);
+    }
+    .mobile-icon-btn.on .mobile-notif-dot { background: var(--green); box-shadow: 0 0 6px rgba(46,204,139,0.7); }
+
+    /* شريط تنقل سفلي يطابق وظيفياً قائمة التصفية في اللاب توب */
+    .mobile-bottom-nav {
+      display: flex;
+      position: fixed; bottom: 0; right: 0; left: 0; z-index: 150;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
+    }
+    .mobile-nav-item {
+      flex: 1;
+      display: flex; flex-direction: column; align-items: center; gap: 3px;
+      padding: 6px 2px;
+      border-radius: var(--radius-sm);
+      color: var(--text3);
+      cursor: pointer;
+      transition: color 0.15s, background 0.15s;
+    }
+    .mobile-nav-item svg { width: 19px; height: 19px; }
+    .mobile-nav-item span { font-size: 10.5px; font-weight: 600; }
+    .mobile-nav-item.active { color: var(--accent); background: var(--accent-glow); }
   }
 </style>
 </head>
@@ -442,6 +520,24 @@
   <span id="notif-text"></span>
 </div>
 
+<div class="mobile-topbar" id="mobile-topbar">
+  <div class="mobile-logo">
+    <div class="logo-icon" style="width:30px;height:30px;">
+      <svg viewBox="0 0 24 24" style="width:16px;height:16px;"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+    </div>
+    <div class="logo-text" style="font-size:14px;">Task Flow</div>
+  </div>
+  <div class="mobile-topbar-actions">
+    <button class="mobile-icon-btn" id="mobile-notif-btn" onclick="toggleNotifications()" title="تذكيرات الذكاء الاصطناعي">
+      <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5S10.5 3.17 10.5 4v.68C7.65 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+      <span class="mobile-notif-dot"></span>
+    </button>
+    <button class="mobile-icon-btn" onclick="toggleTheme()" title="تبديل الوضع">
+      <svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 100 18A9 9 0 0012 3zm0 2a7 7 0 010 14V5z"/></svg>
+    </button>
+  </div>
+</div>
+
 <div class="layout">
   <!-- Sidebar -->
   <aside class="sidebar">
@@ -495,6 +591,12 @@
     </div>
 
     <div class="sidebar-bottom">
+      <div class="notif-toggle" id="notif-toggle-btn" onclick="toggleNotifications()">
+        <svg class="notif-toggle-icon" viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5S10.5 3.17 10.5 4v.68C7.65 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+        تذكيرات الذكاء الاصطناعي
+        <div class="notif-dot-live"></div>
+      </div>
+      <div class="notif-status-line" id="notif-status-text">جارٍ التحقق…</div>
       <div class="theme-toggle" onclick="toggleTheme()">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3a9 9 0 100 18A9 9 0 0012 3zm0 2a7 7 0 010 14V5z"/></svg>
         الوضع النهاري
@@ -633,6 +735,25 @@
   </main>
 </div>
 
+<nav class="mobile-bottom-nav" id="mobile-bottom-nav">
+  <div class="mobile-nav-item active" onclick="setFilter('all', this)" data-filter="all" data-mobilenav>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+    <span>الكل</span>
+  </div>
+  <div class="mobile-nav-item" onclick="setFilter('today', this)" data-filter="today" data-mobilenav>
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg>
+    <span>اليوم</span>
+  </div>
+  <div class="mobile-nav-item" onclick="setFilter('overdue', this)" data-filter="overdue" data-mobilenav>
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+    <span>متأخرة</span>
+  </div>
+  <div class="mobile-nav-item" onclick="setFilter('done', this)" data-filter="done" data-mobilenav>
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+    <span>مكتملة</span>
+  </div>
+</nav>
+
 <script>
 const STORAGE_KEY = 'taskflow_tasks_v2';
 let tasks = [];
@@ -641,33 +762,101 @@ let currentSort = 'priority';
 let editId = null;
 
 
-if ("Notification" in window) {
-  Notification.requestPermission();
+/* ── نظام الإشعارات الذكي ── */
+const NOTIF_PREF_KEY = 'taskflow_notif_enabled';
+let notifEnabled = localStorage.getItem(NOTIF_PREF_KEY) !== 'false';
+
+function getNotifPermissionState() {
+  if (!("Notification" in window)) return 'unsupported';
+  return Notification.permission; // 'granted' | 'denied' | 'default'
+}
+
+function updateNotifUI() {
+  const state = getNotifPermissionState();
+  const btn = document.getElementById('notif-toggle-btn');
+  const status = document.getElementById('notif-status-text');
+  const mobileBtn = document.getElementById('mobile-notif-btn');
+  const isOn = notifEnabled && state === 'granted';
+
+  if (btn) btn.classList.toggle('on', isOn);
+  if (mobileBtn) mobileBtn.classList.toggle('on', isOn);
+  if (!status) return;
+
+  if (state === 'unsupported') status.textContent = 'غير مدعوم في هذا المتصفح';
+  else if (state === 'denied') status.textContent = 'محظورة - فعّلها من إعدادات المتصفح';
+  else if (state === 'default') status.textContent = 'اضغط للسماح بالإشعارات';
+  else status.textContent = notifEnabled ? 'مفعّلة - سيُنبّهك الذكاء الاصطناعي بمواعيدك' : 'معطّلة مؤقتاً';
+}
+
+function toggleNotifications() {
+  const state = getNotifPermissionState();
+  if (state === 'unsupported') { showNotif('المتصفح لا يدعم الإشعارات', 'error'); return; }
+  if (state === 'denied') { showNotif('الإشعارات محظورة، فعّلها من إعدادات المتصفح', 'error'); updateNotifUI(); return; }
+
+  if (state === 'default') {
+    Notification.requestPermission().then(p => {
+      if (p === 'granted') {
+        notifEnabled = true;
+        localStorage.setItem(NOTIF_PREF_KEY, 'true');
+        sendNotification('تم تفعيل الإشعارات 🔔', 'سيقوم المساعد الذكي بتذكيرك بمهامك في وقتها');
+      }
+      updateNotifUI();
+    });
+    return;
+  }
+
+  notifEnabled = !notifEnabled;
+  localStorage.setItem(NOTIF_PREF_KEY, notifEnabled ? 'true' : 'false');
+  showNotif(notifEnabled ? 'تم تفعيل تذكيرات المهام' : 'تم إيقاف تذكيرات المهام', 'info');
+  updateNotifUI();
 }
 
 function sendNotification(title, body) {
-  if (Notification.permission === "granted") {
-    new Notification(title,{body});
+  if (!notifEnabled) return;
+  if (getNotifPermissionState() === 'granted') {
+    try {
+      const n = new Notification(title, { body, tag: title + body, dir: 'rtl', lang: 'ar' });
+      n.onclick = () => { window.focus(); n.close(); };
+    } catch (e) { /* بعض متصفحات الهاتف تتطلب Service Worker، نتجاوز الخطأ بصمت */ }
   }
+  showNotif(body, 'info');
 }
 
 const remindedTasks = new Set();
 
+// فحص دوري ذكي: يراقب المواعيد القريبة والمتأخرة ويرسل تذكيرات متدرجة
 function checkTaskReminders(){
+  if (!notifEnabled) return;
   const now = new Date();
   tasks.forEach(task=>{
-    if(task.done || !task.date || !task.time) return;
-    const taskTime = new Date(task.date + "T" + task.time);
+    if (task.done || !task.date) return;
+    const timePart = task.time ? task.time : '09:00';
+    const taskTime = new Date(task.date + "T" + timePart);
     const diff = taskTime - now;
 
-    if(diff <= 3600000 && diff > 0 && !remindedTasks.has(task.id+"_1h")){
-      sendNotification("تذكير بالمهمة","بقي أقل من ساعة: " + task.text);
+    if (diff > 23*3600000 && diff <= 24*3600000 && !remindedTasks.has(task.id+"_24h")) {
+      sendNotification("تذكير مسبق 📅", `غداً: ${task.text}`);
+      remindedTasks.add(task.id+"_24h");
+    }
+    if (diff <= 3600000 && diff > 1800000 && !remindedTasks.has(task.id+"_1h")) {
+      sendNotification("تذكير بالمهمة ⏰", "بقي أقل من ساعة: " + task.text);
       remindedTasks.add(task.id+"_1h");
     }
-
-    if(diff <= 0 && !remindedTasks.has(task.id+"_due")){
-      sendNotification("حان موعد المهمة ⏰", task.text);
+    if (diff <= 900000 && diff > 0 && !remindedTasks.has(task.id+"_15m")) {
+      sendNotification("الموعد يقترب ⌛", "بقي 15 دقيقة على: " + task.text);
+      remindedTasks.add(task.id+"_15m");
+    }
+    if (diff <= 0 && diff > -60000 && !remindedTasks.has(task.id+"_due")) {
+      sendNotification("حان موعد المهمة الآن ⏰", task.text);
       remindedTasks.add(task.id+"_due");
+    }
+    if (diff < -7200000) {
+      const bucket = Math.floor(diff / -7200000);
+      const key = task.id+"_overdue_"+bucket;
+      if (!remindedTasks.has(key)) {
+        sendNotification("مهمة متأخرة ⚠️", `لم تكمل بعد: ${task.text}`);
+        remindedTasks.add(key);
+      }
     }
   });
 }
@@ -718,7 +907,6 @@ function addTask() {
   document.getElementById('date-sel').value = '';
   saveTasks();
   render();
-setInterval(checkTaskReminders,60000);
   showNotif('تمت إضافة المهمة بنجاح ✓', 'success'); sendNotification('مهمة جديدة', text);
 }
 
@@ -727,14 +915,12 @@ function toggleDone(id) {
   if (!t) return;
   t.done = !t.done;
   saveTasks(); render();
-setInterval(checkTaskReminders,60000);
   if (t.done){ showNotif('أحسنت! تم إنجاز المهمة 🎉', 'success'); sendNotification('تم إنجاز المهمة 🎉', t.text);}
 }
 
 function deleteTask(id) {
   tasks = tasks.filter(x => x.id !== id);
   saveTasks(); render();
-setInterval(checkTaskReminders,60000);
   showNotif('تم حذف المهمة', 'info');
 }
 
@@ -743,7 +929,6 @@ function clearDone() {
   if (!n) { showNotif('لا توجد مهام مكتملة للحذف', 'info'); return; }
   tasks = tasks.filter(x => !x.done);
   saveTasks(); render();
-setInterval(checkTaskReminders,60000);
   showNotif(`تم حذف ${n} مهمة مكتملة`, 'success');
 }
 
@@ -776,7 +961,6 @@ function saveEdit() {
   t.note = document.getElementById('edit-note').value.trim();
   closeModal();
   saveTasks(); render();
-setInterval(checkTaskReminders,60000);
   showNotif('تم حفظ التعديلات ✓', 'success');
 }
 
@@ -785,7 +969,6 @@ function setFilter(f, el) {
   document.querySelectorAll('[data-filter]').forEach(e => e.classList.remove('active'));
   if (el) el.classList.add('active');
   render();
-setInterval(checkTaskReminders,60000);
 }
 
 function setSort(s, el) {
@@ -793,7 +976,6 @@ function setSort(s, el) {
   document.querySelectorAll('[data-sort]').forEach(e => e.classList.remove('active'));
   if (el) el.classList.add('active');
   render();
-setInterval(checkTaskReminders,60000);
 }
 
 function isOverdue(t) {
@@ -958,7 +1140,9 @@ document.getElementById('edit-modal').addEventListener('click', e => {
 loadTasks();
 setGreeting();
 render();
-setInterval(checkTaskReminders,60000);
+updateNotifUI();
+checkTaskReminders();
+setInterval(checkTaskReminders, 60000);
 </script>
 </body>
 </html>
